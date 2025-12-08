@@ -1,0 +1,23 @@
+﻿# データベース
+data/keiba.db
+data/*.db
+
+# CSV
+data/csv_imports/
+
+# モデル（大きい場合）
+data/models/*.pkl
+
+# 一時ファイル
+temp/
+logs/
+__pycache__/
+*.pyc
+
+# 環境
+venv*/
+.env
+
+# IDE
+.vscode/
+.idea/
