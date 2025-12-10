@@ -1,4 +1,4 @@
-﻿"""
+"""
 改善版オッズ統合予測スクリプト v2.4 - Keiba Intelligence
 3カテゴリー推奨レース版（鉄板・中穴・大穴）
 - 人気の盲点（ギャップ指標）による選定
@@ -13,6 +13,9 @@ from pathlib import Path
 from datetime import datetime
 import argparse
 import warnings
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+from learning.prediction_logger import PredictionLogger
 warnings.filterwarnings('ignore')
 
 # ============================================================
@@ -253,6 +256,141 @@ def convert_to_predict_format(merged_df, date_str):
     return pred_df
 
 
+
+
+def zen_to_han(s):
+    """全角数字を半角に変換"""
+    if pd.isna(s):
+        return np.nan
+    s = str(s)
+    zen = '０１２３４５６７８９'
+    han = '0123456789'
+    for z, h in zip(zen, han):
+        s = s.replace(z, h)
+    try:
+        return int(s) if s.isdigit() else np.nan
+    except:
+        return np.nan
+
+
+def load_historical_data_from_csv():
+    """新CSVから過去データを読み込み（脚質・前走情報付き）"""
+    print("📚 過去データ読み込み中（新CSV）...")
+    
+    csv_path = CSV_DIR / 'results' / '20150105_20251130all.csv'
+    
+    if not csv_path.exists():
+        print(f"⚠️  CSVファイルが見つかりません: {csv_path}")
+        return load_historical_data()  # フォールバック
+    
+    # 必要なカラムのみ読み込み
+    use_cols = [
+        '日付', '場所', 'Ｒ', '馬番', '馬名', '着順', '単勝オッズ', '人気',
+        '年齢', '性別', '騎手', '調教師', '馬体重', '斤量', '枠番', '上り3F',
+        '頭数', '芝・ダ', '距離', '馬場状態', '天気', 'クラス名',
+        '脚質', '前走着順', '前走脚質', '間隔'
+    ]
+    
+    df = pd.read_csv(csv_path, encoding='cp932', usecols=use_cols, low_memory=False)
+    
+    # カラム名変換
+    df = df.rename(columns={
+        '日付': 'date_raw',
+        '場所': 'place_name',
+        'Ｒ': 'race_no',
+        '馬番': 'horse_no',
+        '馬名': 'horse_name',
+        '着順': 'finish_position_raw',
+        '単勝オッズ': 'odds_win',
+        '人気': 'popularity',
+        '年齢': 'horse_age',
+        '性別': 'horse_sex',
+        '騎手': 'jockey_name',
+        '調教師': 'trainer_name',
+        '馬体重': 'horse_weight',
+        '斤量': 'load_weight',
+        '枠番': 'gate_no',
+        '上り3F': 'last_3f_time',
+        '頭数': 'field_size',
+        '芝・ダ': 'track_type',
+        '距離': 'distance',
+        '馬場状態': 'track_condition',
+        '天気': 'weather',
+        'クラス名': 'race_class',
+        '脚質': 'running_style',
+        '前走着順': 'prev_finish_raw',
+        '前走脚質': 'prev_running_style',
+        '間隔': 'rest_weeks'
+    })
+    
+    # データ変換
+    # 日付変換 (YYMMDD → YYYY-MM-DD)
+    df['date'] = df['date_raw'].apply(lambda x: f"20{str(x)[:2]}-{str(x)[2:4]}-{str(x)[4:6]}" if pd.notna(x) else None)
+    
+    # 着順変換（全角→半角）
+    df['finish_position'] = df['finish_position_raw'].apply(zen_to_han)
+    
+    # 前走着順変換（全角→半角）
+    df['prev_finish'] = df['prev_finish_raw'].apply(zen_to_han)
+    
+    # 天気のtrim
+    df['weather'] = df['weather'].str.strip() if df['weather'].dtype == 'object' else df['weather']
+    
+    # トラックタイプ変換
+    df['track_type'] = df['track_type'].replace({'ダ': 'ダート'})
+    
+    # 場所コード追加
+    place_to_code = {
+        '札幌': '01', '函館': '02', '福島': '03', '新潟': '04',
+        '東京': '05', '中山': '06', '中京': '07', '京都': '08',
+        '阪神': '09', '小倉': '10'
+    }
+    df['place_code'] = df['place_name'].map(place_to_code)
+    
+    # race_id生成
+    df['race_id'] = df['date'] + '_' + df['place_code'] + '_' + df['race_no'].astype(str).str.zfill(2)
+    
+    # 脚質スコア（勝率ベース）
+    running_style_score = {
+        '逃げ': 19.5,
+        '先行': 13.9,
+        '中団': 4.9,
+        '後方': 1.4,
+        'ﾏｸﾘ': 16.3,
+        '不明': 5.0
+    }
+    df['running_style_score'] = df['running_style'].map(running_style_score).fillna(5.0)
+    
+    # 前走着順スコア
+    prev_finish_score = {
+        1: 11.2, 2: 20.2, 3: 14.1, 4: 10.4, 5: 7.8,
+        6: 6.0, 7: 5.0, 8: 4.0, 9: 3.5, 10: 3.0
+    }
+    df['prev_finish_score'] = df['prev_finish'].map(prev_finish_score).fillna(5.0)
+    
+    # 数値型変換
+    numeric_cols = ['odds_win', 'popularity', 'horse_age', 'horse_weight', 
+                    'load_weight', 'gate_no', 'last_3f_time', 'field_size', 'distance']
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    
+    # 有効データのみ抽出
+    df = df[
+        (df['finish_position'].notna()) & 
+        (df['finish_position'] > 0) &
+        (df['odds_win'].notna()) & 
+        (df['odds_win'] > 0)
+    ]
+    
+    # レースクラス判定
+    df['is_graded'] = df['race_class'].str.contains('Ｇ', na=False)
+    df['is_maiden'] = df['race_class'].str.contains('新馬|未勝利', na=False)
+    
+    print(f"  → {len(df):,}件（脚質・前走情報付き）")
+    
+    return df
+
 def load_historical_data():
     print("📚 過去データ読み込み中...")
     conn = sqlite3.connect(DB_PATH)
@@ -312,6 +450,25 @@ def create_features(df, is_prediction=False):
 
     features['is_graded'] = df['is_graded'].astype(int) if 'is_graded' in df.columns else 0
     features['is_maiden'] = df['is_maiden'].astype(int) if 'is_maiden' in df.columns else 0
+
+
+    # === 新特徴量（脚質・前走情報）===
+    if 'running_style_score' in df.columns:
+        features['running_style_score'] = df['running_style_score'].fillna(5.0)
+    else:
+        features['running_style_score'] = 5.0
+
+    if 'prev_finish_score' in df.columns:
+        features['prev_finish_score'] = df['prev_finish_score'].fillna(5.0)
+    else:
+        features['prev_finish_score'] = 5.0
+
+    if 'rest_weeks' in df.columns:
+        features['rest_weeks'] = df['rest_weeks'].fillna(4).clip(0, 52)
+        features['rest_weeks_optimal'] = ((df['rest_weeks'] >= 2) & (df['rest_weeks'] <= 4)).astype(int)
+    else:
+        features['rest_weeks'] = 4
+        features['rest_weeks_optimal'] = 1
 
     return features
 
@@ -979,7 +1136,7 @@ def main():
         merged_df['odds_win'] = None
 
     pred_df = convert_to_predict_format(merged_df, date_str[2:])
-    hist_df = load_historical_data()
+    hist_df = load_historical_data_from_csv()
     model, feature_cols = train_model(hist_df)
     result_df = predict_races(model, feature_cols, pred_df)
 
@@ -988,6 +1145,18 @@ def main():
 
     # 結果表示
     print_predictions(result_df, recommended)
+
+
+    # 予測ログ記録
+    try:
+        logger = PredictionLogger(model_version='3.0')
+        features_df = create_features(result_df, is_prediction=True)
+        track_condition = result_df['track_condition'].iloc[0] if 'track_condition' in result_df.columns else '良'
+        weather = result_df['weather'].iloc[0] if 'weather' in result_df.columns else '晴'
+        log_result = logger.log_predictions(result_df, features_df, [], track_condition, weather)
+        print(f"📝 予測ログ記録: {log_result.get('logged', 0)}件")
+    except Exception as e:
+        print(f"⚠️  予測ログ記録エラー: {e}")
 
     # JSON保存
     output = generate_output(result_df, recommended, has_odds)
@@ -1022,6 +1191,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
 
 
 
