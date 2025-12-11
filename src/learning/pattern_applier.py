@@ -168,6 +168,9 @@ def test_applier():
         'race_id': ['R1', 'R1', 'R2', 'R2'],
         'horse_no': [1, 2, 1, 2],
         'track_type': ['芝', 'ダート', '芝', 'ダート'],
+        'track_condition': ['良', '良', '不良', '不良'],
+        'running_style': ['逃げ', '先行', '中団', '逃げ'],
+        'prev_finish': [3, 2, 1, 2],
         'score': [70.0, 65.0, 80.0, 75.0]
     })
     
