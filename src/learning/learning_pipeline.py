@@ -264,21 +264,56 @@ class LearningPipeline:
         print(f"  検証待ち: {status.get('pending_validation', 0):,}件")
 
 
-def test_pipeline():
-    """パイプラインテスト"""
-    print("="*60)
-    print("🧪 LearningPipeline テスト")
-    print("="*60)
+
+
+def main():
+    """CLIエントリーポイント"""
+    import argparse
     
-    pipeline = LearningPipeline(model_version="3.0")
+    parser = argparse.ArgumentParser(
+        description='自己学習パイプライン',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+使用例:
+  python learning_pipeline.py --status           # システム状態確認
+  python learning_pipeline.py --collect          # 結果収集
+  python learning_pipeline.py --analyze          # 差分分析
+  python learning_pipeline.py --extract          # パターン抽出
+  python learning_pipeline.py --validate         # パターン検証
+  python learning_pipeline.py --cycle            # 全サイクル実行
+  python learning_pipeline.py --cycle --date 2025-12-07  # 特定日のサイクル
+"""
+    )
     
-    # システム状態表示
-    pipeline.show_status()
+    parser.add_argument('--status', action='store_true', help='システム状態を表示')
+    parser.add_argument('--collect', action='store_true', help='結果収集を実行')
+    parser.add_argument('--analyze', action='store_true', help='差分分析を実行')
+    parser.add_argument('--extract', action='store_true', help='パターン抽出を実行')
+    parser.add_argument('--validate', action='store_true', help='パターン検証を実行')
+    parser.add_argument('--cycle', action='store_true', help='全学習サイクルを実行')
+    parser.add_argument('--date', type=str, help='対象日 (YYYY-MM-DD)')
+    parser.add_argument('--version', type=str, default='3.0', help='モデルバージョン')
     
-    print("\n✅ パイプライン初期化成功")
+    args = parser.parse_args()
+    
+    pipeline = LearningPipeline(model_version=args.version)
+    
+    if args.status:
+        pipeline.show_status()
+    elif args.collect:
+        pipeline.run_result_collection(args.date)
+    elif args.analyze:
+        pipeline.run_analysis(args.date)
+    elif args.extract:
+        pipeline.run_pattern_extraction()
+    elif args.validate:
+        pipeline.run_pattern_validation()
+    elif args.cycle:
+        pipeline.run_post_race_cycle(args.date)
+    else:
+        pipeline.show_status()
+        print('\n💡 ヘルプ: python learning_pipeline.py --help')
 
 
-if __name__ == "__main__":
-    test_pipeline()
-
-
+if __name__ == '__main__':
+    main()
