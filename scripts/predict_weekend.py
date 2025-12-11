@@ -1,4 +1,4 @@
-"""
+﻿"""
 改善版オッズ統合予測スクリプト v2.4 - Keiba Intelligence
 3カテゴリー推奨レース版（鉄板・中穴・大穴）
 - 人気の盲点（ギャップ指標）による選定
@@ -16,6 +16,7 @@ import warnings
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 from learning.prediction_logger import PredictionLogger
+from learning.pattern_applier import PatternApplier
 warnings.filterwarnings('ignore')
 
 # ============================================================
@@ -512,6 +513,17 @@ def predict_races(model, feature_cols, pred_df):
     probs = model.predict_proba(X_pred)[:, 1]
     df['pred_prob'] = probs
     df['score'] = df['pred_prob'] * 100
+
+    # 検証済みパターンを適用
+    try:
+        applier = PatternApplier()
+        if applier.patterns:
+            print(f"📚 パターン適用中...")
+            df, applied_info = applier.apply_patterns(df)
+            if applied_info['applied'] > 0:
+                print(f"  → {applied_info['applied']}パターン適用完了")
+    except Exception as e:
+        print(f"⚠️  パターン適用エラー: {e}")
 
     # AIスコアによるランク
     df['pred_rank'] = df.groupby('race_id')['pred_prob'].rank(ascending=False, method='first').astype(int)
@@ -1191,6 +1203,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
