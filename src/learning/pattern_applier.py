@@ -10,6 +10,7 @@ import sqlite3
 import json
 import pandas as pd
 from pathlib import Path
+from .config import get_bin_range
 
 DB_PATH = Path(__file__).parent.parent.parent / 'data' / 'keiba.db'
 

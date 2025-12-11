@@ -14,38 +14,74 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.core.database import get_connection
+from .config import FEATURE_BINS, CATEGORICAL_FEATURES, get_bin_range, get_bin_label
 
 # 特徴量定義
-CATEGORICAL_FEATURES = [
-    'track_type',        # 芝/ダート
-    'track_condition',   # 良/稍重/重/不良
-    'weather',           # 晴/曇/雨
-    'place_code',        # 競馬場
-]
 
-NUMERICAL_BINS = {
-    'odds_win': {
-        'bins': [0, 3, 10, 30, 1000],
-        'labels': ['低オッズ(~3)', '中オッズ(3-10)', '高オッズ(10-30)', '超高オッズ(30+)']
-    },
-    'popularity': {
-        'bins': [0, 3, 6, 100],
-        'labels': ['上位人気(1-3)', '中位人気(4-6)', '下位人気(7+)']
-    },
-    'field_size': {
-        'bins': [0, 10, 14, 100],
-        'labels': ['少頭数(~10)', '標準(11-14)', '多頭数(15+)']
-    },
-    'distance': {
-        'bins': [0, 1400, 1800, 2200, 10000],
-        'labels': ['短距離(~1400)', 'マイル(1401-1800)', '中距離(1801-2200)', '長距離(2201+)']
-    },
-    'horse_age': {
-        'bins': [0, 3, 5, 100],
-        'labels': ['若馬(2-3)', '中堅(4-5)', '古馬(6+)']
-    }
-}
 
+
+
+def _make_condition(feature_name: str, value) -> dict:
+    """
+    パターン条件を適切な形式で生成
+    - 数値特徴量: {"min": X, "max": Y} 形式
+    - カテゴリカル: そのままの値
+    - リスト形式: 各要素を数値範囲に変換
+    """
+    # ビン化された特徴量名から元の名前を取得
+    original_feature = feature_name.replace('_bin', '')
+    
+    # リスト形式の場合
+    if isinstance(value, list):
+        if original_feature in FEATURE_BINS:
+            # 数値特徴量のリスト -> 各ラベルを範囲に変換
+            ranges = []
+            for v in value:
+                range_tuple = get_bin_range(original_feature, str(v))
+                if range_tuple:
+                    ranges.append({"min": range_tuple[0], "max": 99999 if range_tuple[1] == float("inf") else range_tuple[1], "label": str(v)})
+            if ranges:
+                return {original_feature: ranges}
+        # カテゴリカルのリストはそのまま
+        return {original_feature: [str(v) for v in value]}
+    
+    # 単一値の場合
+    if original_feature in FEATURE_BINS:
+        label = str(value)
+        range_tuple = get_bin_range(original_feature, label)
+        if range_tuple:
+            return {original_feature: {"min": range_tuple[0], "max": 99999 if range_tuple[1] == float("inf") else range_tuple[1], "label": label}}
+        else:
+            return {original_feature: label}
+    else:
+        return {feature_name: str(value)}
+
+
+def _convert_tree_conditions(conditions: dict) -> dict:
+    """
+    決定木の条件を数値範囲形式に変換
+    """
+    result = {}
+    for feature, values in conditions.items():
+        original_feature = feature.replace('_bin', '')
+        
+        if isinstance(values, list):
+            if original_feature in FEATURE_BINS:
+                ranges = []
+                for v in values:
+                    range_tuple = get_bin_range(original_feature, str(v))
+                    if range_tuple:
+                        ranges.append({"min": range_tuple[0], "max": 99999 if range_tuple[1] == float("inf") else range_tuple[1], "label": str(v)})
+                    else:
+                        ranges.append(str(v))
+                result[original_feature] = ranges if ranges else values
+            else:
+                result[original_feature] = [str(v) for v in values]
+        else:
+            merged = _make_condition(feature, values)
+            result.update(merged)
+    
+    return result
 
 class PatternExtractor:
     """パターン抽出クラス"""
@@ -120,7 +156,7 @@ class PatternExtractor:
         """数値特徴量をビン化"""
         df = df.copy()
 
-        for col, config in NUMERICAL_BINS.items():
+        for col, config in FEATURE_BINS.items():
             if col in df.columns:
                 # NaN/None値を除外してビン化
                 col_data = pd.to_numeric(df[col], errors='coerce')
@@ -151,7 +187,7 @@ class PatternExtractor:
         
         # カテゴリ特徴量 + ビン化した数値特徴量
         features_to_analyze = CATEGORICAL_FEATURES.copy()
-        features_to_analyze += [f'{col}_bin' for col in NUMERICAL_BINS.keys()]
+        features_to_analyze += [f'{col}_bin' for col in FEATURE_BINS.keys()]
         
         # 全体の的中率（ベースライン）
         baseline_hit_rate = df['is_hit_1st'].mean() * 100 if len(df) > 0 else 0
@@ -196,11 +232,12 @@ class PatternExtractor:
                     candidates.append({
                         'pattern_type': pattern_type,
                         'pattern_name': pattern_name,
-                        'pattern_conditions': {feature_name: str(row[feature])},
+                        # 数値範囲形式で条件を生成
+                        'pattern_conditions': _make_condition(feature_name, row[feature]),
                         'extraction_method': 'frequency',
                         'action_type': action_type,
                         'action_value': action_value,
-                        'sample_size': int(row['total']),
+                        'sample_size': int(row['total']) if not isinstance(row['total'], bytes) else 0,
                         'hit_rate': round(row['hit_rate'], 2),
                         'baseline_rate': round(baseline_hit_rate, 2),
                         'effect_size': round(effect_size, 2),
@@ -224,7 +261,7 @@ class PatternExtractor:
         df = self._bin_numerical_features(df)
         
         features_to_analyze = CATEGORICAL_FEATURES.copy()
-        features_to_analyze += [f'{col}_bin' for col in NUMERICAL_BINS.keys()]
+        features_to_analyze += [f'{col}_bin' for col in FEATURE_BINS.keys()]
         
         baseline_hit_rate = df['is_hit_1st'].mean() * 100 if len(df) > 0 else 0
         
@@ -270,7 +307,8 @@ class PatternExtractor:
                     candidates.append({
                         'pattern_type': pattern_type,
                         'pattern_name': pattern_name,
-                        'pattern_conditions': {feature_name: str(category)},
+                        # 数値範囲形式で条件を生成
+                        'pattern_conditions': _make_condition(feature_name, category),
                         'extraction_method': 'chi_square',
                         'action_type': action_type,
                         'action_value': action_value,
@@ -317,7 +355,7 @@ class PatternExtractor:
                 df[f'{col}_enc'] = le.fit_transform(df[col].fillna('unknown').astype(str))
                 encoders[col] = le
         
-        for col in NUMERICAL_BINS.keys():
+        for col in FEATURE_BINS.keys():
             bin_col = f'{col}_bin'
             if bin_col in df.columns and df[bin_col].notna().sum() > 0:
                 feature_cols.append(bin_col)
@@ -376,7 +414,7 @@ class PatternExtractor:
                         candidates.append({
                             'pattern_type': 'condition',
                             'pattern_name': pattern_name,
-                            'pattern_conditions': readable_conditions,
+                            'pattern_conditions': _convert_tree_conditions(readable_conditions),
                             'extraction_method': 'decision_tree',
                             'action_type': 'confidence',
                             'action_value': round(effect_size / 10, 2),
@@ -465,7 +503,7 @@ class PatternExtractor:
                         json.dumps(c['pattern_conditions'], ensure_ascii=False),
                         c['extraction_method'],
                         datetime.now().strftime('%Y-%m-%d'),
-                        c['sample_size'],
+                        int(c['sample_size']) if not isinstance(c['sample_size'], bytes) else 0,
                         c['effect_size'],
                         c.get('p_value')
                     ))

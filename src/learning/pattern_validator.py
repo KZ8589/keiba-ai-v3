@@ -14,6 +14,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.core.database import get_connection
+from .config import FEATURE_BINS, get_bin_range
 from src.core.config import LEARNING_CONFIG
 
 
@@ -127,29 +128,63 @@ class PatternValidator:
         
         return df
     
+
+
+
     def apply_pattern_conditions(self, df: pd.DataFrame, conditions: dict) -> pd.DataFrame:
         """
         パターン条件を適用してフィルタリング
         
-        Args:
-            df: データフレーム
-            conditions: パターン条件
-        
-        Returns:
-            DataFrame: フィルタリング後のデータ
+        対応形式:
+        - 数値範囲: {"odds_win": {"min": 10, "max": 30}}
+        - カテゴリカル: {"track_type": "芝"}
+        - レガシー（ラベル）: {"odds_win": "高オッズ"} → 数値範囲に変換
         """
         filtered = df.copy()
-        
+
         for key, value in conditions.items():
             if key not in filtered.columns:
                 continue
+
+            if isinstance(value, dict) and 'min' in value and 'max' in value:
+                # 新形式: 数値範囲 {"min": X, "max": Y}
+                min_val = value['min']
+                max_val = value['max']
+                # inf対応
+                if max_val == float('inf') or max_val > 9999:
+                    filtered = filtered[filtered[key] > min_val]
+                else:
+                    filtered = filtered[(filtered[key] > min_val) & (filtered[key] <= max_val)]
             
-            if isinstance(value, list):
+            elif isinstance(value, list):
                 # リストの場合はOR条件
-                filtered = filtered[filtered[key].isin(value)]
+                mask = pd.Series([False] * len(filtered), index=filtered.index)
+                for v in value:
+                    if isinstance(v, dict) and 'min' in v and 'max' in v:
+                        min_val = v['min']
+                        max_val = v['max']
+                        if max_val == float('inf') or max_val > 9999:
+                            mask |= (filtered[key] > min_val)
+                        else:
+                            mask |= (filtered[key] > min_val) & (filtered[key] <= max_val)
+                    else:
+                        # レガシー対応: ラベルから範囲を取得
+                        range_tuple = get_bin_range(key, str(v))
+                        if range_tuple:
+                            mask |= (filtered[key] > range_tuple[0]) & (filtered[key] <= range_tuple[1])
+                        else:
+                            mask |= (filtered[key].astype(str) == str(v))
+                filtered = filtered[mask]
+            
             elif isinstance(value, str):
-                # 文字列の場合は完全一致
-                if value.startswith('>='):
+                # レガシー対応: ラベルから範囲を取得
+                range_tuple = get_bin_range(key, value)
+                if range_tuple:
+                    if range_tuple[1] == float('inf'):
+                        filtered = filtered[filtered[key] > range_tuple[0]]
+                    else:
+                        filtered = filtered[(filtered[key] > range_tuple[0]) & (filtered[key] <= range_tuple[1])]
+                elif value.startswith('>='):
                     filtered = filtered[filtered[key] >= float(value[2:])]
                 elif value.startswith('<='):
                     filtered = filtered[filtered[key] <= float(value[2:])]
@@ -159,11 +194,12 @@ class PatternValidator:
                     filtered = filtered[filtered[key] < float(value[1:])]
                 else:
                     filtered = filtered[filtered[key].astype(str) == value]
+            
             elif isinstance(value, (int, float)):
                 filtered = filtered[filtered[key] == value]
-        
+
         return filtered
-    
+
     def validate_pattern(self, candidate: dict, df: pd.DataFrame) -> dict:
         """
         単一パターンを検証
