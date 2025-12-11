@@ -119,18 +119,23 @@ class PatternExtractor:
     def _bin_numerical_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """数値特徴量をビン化"""
         df = df.copy()
-        
+
         for col, config in NUMERICAL_BINS.items():
             if col in df.columns:
-                df[f'{col}_bin'] = pd.cut(
-                    df[col],
-                    bins=config['bins'],
-                    labels=config['labels'],
-                    include_lowest=True
-                )
-        
+                # NaN/None値を除外してビン化
+                col_data = pd.to_numeric(df[col], errors='coerce')
+                valid_mask = col_data.notna()
+                df[f'{col}_bin'] = 'unknown'
+                if valid_mask.sum() > 0:
+                    df.loc[valid_mask, f'{col}_bin'] = pd.cut(
+                        col_data[valid_mask],
+                        bins=config['bins'],
+                        labels=config['labels'],
+                        include_lowest=True
+                    ).astype(str)
+
         return df
-    
+
     def extract_by_frequency(self, df: pd.DataFrame) -> list:
         """
         頻度分析による単一条件パターン抽出
@@ -702,5 +707,6 @@ def test_extractor():
 
 if __name__ == "__main__":
     test_extractor()
+
 
 
