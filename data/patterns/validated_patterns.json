@@ -1,0 +1,578 @@
+[
+  {
+    "pattern_id": "odds_win_低オッズ",
+    "conditions": {
+      "odds_win": {
+        "min": 0,
+        "max": 3,
+        "label": "低オッズ"
+      }
+    },
+    "sample_size": 29419,
+    "win_rate": 0.3721404534484517,
+    "win_effect": 29.995949386291198,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:05:54.541352",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "odds_win_中オッズ",
+    "conditions": {
+      "odds_win": {
+        "min": 3,
+        "max": 10,
+        "label": "中オッズ"
+      }
+    },
+    "sample_size": 123932,
+    "win_rate": 0.14536197269470355,
+    "win_effect": 7.318101310916381,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:05:55.439035",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "odds_win_高オッズ",
+    "conditions": {
+      "odds_win": {
+        "min": 10,
+        "max": 30,
+        "label": "高オッズ"
+      }
+    },
+    "sample_size": 132224,
+    "win_rate": 0.04961277831558567,
+    "win_effect": -2.256818126995407,
+    "p_value": 1.4690937110688045e-187,
+    "consistency": 1.0,
+    "score_adjustment": -2.256818126995407,
+    "last_updated": "2025-12-15T14:05:56.389462",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "odds_win_超高オッズ",
+    "conditions": {
+      "odds_win": {
+        "min": 30,
+        "max": null,
+        "label": "超高オッズ"
+      }
+    },
+    "sample_size": 237901,
+    "win_rate": 0.009508156754280142,
+    "win_effect": -6.26728028312596,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:05:57.453944",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "popularity_上位人気",
+    "conditions": {
+      "popularity": {
+        "min": 0,
+        "max": 3,
+        "label": "上位人気"
+      }
+    },
+    "sample_size": 112811,
+    "win_rate": 0.21863116185478365,
+    "win_effect": 14.645020226924391,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:05:58.427915",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "popularity_下位人気",
+    "conditions": {
+      "popularity": {
+        "min": 6,
+        "max": null,
+        "label": "下位人気"
+      }
+    },
+    "sample_size": 297972,
+    "win_rate": 0.01638073376021908,
+    "win_effect": -5.580022582532067,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:05:59.900340",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "field_size_少頭数",
+    "conditions": {
+      "field_size": {
+        "min": 0,
+        "max": 10,
+        "label": "少頭数"
+      }
+    },
+    "sample_size": 46862,
+    "win_rate": 0.1136101745550766,
+    "win_effect": 4.142921496953686,
+    "p_value": 5.5913518038424236e-232,
+    "consistency": 1.0,
+    "score_adjustment": 4.142921496953686,
+    "last_updated": "2025-12-15T14:06:00.793118",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "distance_長距離",
+    "conditions": {
+      "distance": {
+        "min": 2200,
+        "max": null,
+        "label": "長距離"
+      }
+    },
+    "sample_size": 34935,
+    "win_rate": 0.08404179189924145,
+    "win_effect": 1.1860832313701706,
+    "p_value": 1.5137115539495627e-16,
+    "consistency": 1.0,
+    "score_adjustment": 1.1860832313701706,
+    "last_updated": "2025-12-15T14:06:03.748667",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "horse_age_古馬",
+    "conditions": {
+      "horse_age": {
+        "min": 5,
+        "max": null,
+        "label": "古馬"
+      }
+    },
+    "sample_size": 53401,
+    "win_rate": 0.041778243853111366,
+    "win_effect": -3.040271573242838,
+    "p_value": 5.312991553517483e-153,
+    "consistency": 1.0,
+    "score_adjustment": -3.040271573242838,
+    "last_updated": "2025-12-15T14:06:05.368260",
+    "type": "single_feature"
+  },
+  {
+    "pattern_id": "odds_win_低オッズ_popularity_上位人気",
+    "conditions": {
+      "odds_win": {
+        "min": 0,
+        "max": 3,
+        "label": "低オッズ"
+      },
+      "popularity": {
+        "min": 0,
+        "max": 3,
+        "label": "上位人気"
+      }
+    },
+    "sample_size": 29419,
+    "win_rate": 0.3721404534484517,
+    "win_effect": 29.995949386291198,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:06.103790",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_中オッズ_popularity_上位人気",
+    "conditions": {
+      "odds_win": {
+        "min": 3,
+        "max": 10,
+        "label": "中オッズ"
+      },
+      "popularity": {
+        "min": 0,
+        "max": 3,
+        "label": "上位人気"
+      }
+    },
+    "sample_size": 81398,
+    "win_rate": 0.16680999533158064,
+    "win_effect": 9.46290357460409,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:06.945950",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_中オッズ_popularity_中位人気",
+    "conditions": {
+      "odds_win": {
+        "min": 3,
+        "max": 10,
+        "label": "中オッズ"
+      },
+      "popularity": {
+        "min": 3,
+        "max": 6,
+        "label": "中位人気"
+      }
+    },
+    "sample_size": 42309,
+    "win_rate": 0.10432768441702711,
+    "win_effect": 3.2146724831487368,
+    "p_value": 1.5272185332000134e-129,
+    "consistency": 1.0,
+    "score_adjustment": 3.2146724831487368,
+    "last_updated": "2025-12-15T14:06:07.728419",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_高オッズ_popularity_下位人気",
+    "conditions": {
+      "odds_win": {
+        "min": 10,
+        "max": 30,
+        "label": "高オッズ"
+      },
+      "popularity": {
+        "min": 6,
+        "max": null,
+        "label": "下位人気"
+      }
+    },
+    "sample_size": 63925,
+    "win_rate": 0.04142354321470473,
+    "win_effect": -3.0757416370835013,
+    "p_value": 5.330161646047174e-185,
+    "consistency": 1.0,
+    "score_adjustment": -3.0757416370835013,
+    "last_updated": "2025-12-15T14:06:08.767337",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_超高オッズ_popularity_中位人気",
+    "conditions": {
+      "odds_win": {
+        "min": 30,
+        "max": null,
+        "label": "超高オッズ"
+      },
+      "popularity": {
+        "min": 3,
+        "max": 6,
+        "label": "中位人気"
+      }
+    },
+    "sample_size": 4072,
+    "win_rate": 0.012770137524557957,
+    "win_effect": -5.941082206098179,
+    "p_value": 1.6217775869287652e-48,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:06:09.460085",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_超高オッズ_popularity_下位人気",
+    "conditions": {
+      "odds_win": {
+        "min": 30,
+        "max": null,
+        "label": "超高オッズ"
+      },
+      "popularity": {
+        "min": 6,
+        "max": null,
+        "label": "下位人気"
+      }
+    },
+    "sample_size": 233822,
+    "win_rate": 0.009451634149053553,
+    "win_effect": -6.272932543648619,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:06:10.538476",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_低オッズ_field_size_少頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 0,
+        "max": 3,
+        "label": "低オッズ"
+      },
+      "field_size": {
+        "min": 0,
+        "max": 10,
+        "label": "少頭数"
+      }
+    },
+    "sample_size": 5856,
+    "win_rate": 0.40027322404371585,
+    "win_effect": 32.80922644581761,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:11.236711",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_低オッズ_field_size_標準頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 0,
+        "max": 3,
+        "label": "低オッズ"
+      },
+      "field_size": {
+        "min": 10,
+        "max": 14,
+        "label": "標準頭数"
+      }
+    },
+    "sample_size": 9926,
+    "win_rate": 0.3741688494861979,
+    "win_effect": 30.198788990065818,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:11.884306",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_低オッズ_field_size_多頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 0,
+        "max": 3,
+        "label": "低オッズ"
+      },
+      "field_size": {
+        "min": 14,
+        "max": null,
+        "label": "多頭数"
+      }
+    },
+    "sample_size": 13637,
+    "win_rate": 0.358583266114248,
+    "win_effect": 28.640230652870823,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:12.536717",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_中オッズ_field_size_少頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 3,
+        "max": 10,
+        "label": "中オッズ"
+      },
+      "field_size": {
+        "min": 0,
+        "max": 10,
+        "label": "少頭数"
+      }
+    },
+    "sample_size": 15032,
+    "win_rate": 0.15041245343267695,
+    "win_effect": 7.82314938471372,
+    "p_value": 7.693522255605586e-285,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:13.171321",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_中オッズ_field_size_標準頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 3,
+        "max": 10,
+        "label": "中オッズ"
+      },
+      "field_size": {
+        "min": 10,
+        "max": 14,
+        "label": "標準頭数"
+      }
+    },
+    "sample_size": 39783,
+    "win_rate": 0.14611768845989492,
+    "win_effect": 7.3936728874355175,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:14.004103",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_中オッズ_field_size_多頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 3,
+        "max": 10,
+        "label": "中オッズ"
+      },
+      "field_size": {
+        "min": 14,
+        "max": null,
+        "label": "多頭数"
+      }
+    },
+    "sample_size": 69117,
+    "win_rate": 0.1438285805228815,
+    "win_effect": 7.164762093734176,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": 5,
+    "last_updated": "2025-12-15T14:06:14.832625",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_高オッズ_field_size_少頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 10,
+        "max": 30,
+        "label": "高オッズ"
+      },
+      "field_size": {
+        "min": 0,
+        "max": 10,
+        "label": "少頭数"
+      }
+    },
+    "sample_size": 11663,
+    "win_rate": 0.04921546771842579,
+    "win_effect": -2.2965491867113954,
+    "p_value": 1.9131764350899643e-21,
+    "consistency": 1.0,
+    "score_adjustment": -2.2965491867113954,
+    "last_updated": "2025-12-15T14:06:15.562009",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_高オッズ_field_size_標準頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 10,
+        "max": 30,
+        "label": "高オッズ"
+      },
+      "field_size": {
+        "min": 10,
+        "max": 14,
+        "label": "標準頭数"
+      }
+    },
+    "sample_size": 40177,
+    "win_rate": 0.04955571595689076,
+    "win_effect": -2.262524362864898,
+    "p_value": 2.596985520474295e-65,
+    "consistency": 1.0,
+    "score_adjustment": -2.262524362864898,
+    "last_updated": "2025-12-15T14:06:16.316387",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_高オッズ_field_size_多頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 10,
+        "max": 30,
+        "label": "高オッズ"
+      },
+      "field_size": {
+        "min": 14,
+        "max": null,
+        "label": "多頭数"
+      }
+    },
+    "sample_size": 80384,
+    "win_rate": 0.049698945063694266,
+    "win_effect": -2.248201452184548,
+    "p_value": 5.264239160052835e-121,
+    "consistency": 1.0,
+    "score_adjustment": -2.248201452184548,
+    "last_updated": "2025-12-15T14:06:17.148128",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_超高オッズ_field_size_少頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 30,
+        "max": null,
+        "label": "超高オッズ"
+      },
+      "field_size": {
+        "min": 0,
+        "max": 10,
+        "label": "少頭数"
+      }
+    },
+    "sample_size": 14311,
+    "win_rate": 0.010132066242750332,
+    "win_effect": -6.204889334278942,
+    "p_value": 4.550934989101575e-180,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:06:17.842434",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_超高オッズ_field_size_標準頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 30,
+        "max": null,
+        "label": "超高オッズ"
+      },
+      "field_size": {
+        "min": 10,
+        "max": 14,
+        "label": "標準頭数"
+      }
+    },
+    "sample_size": 62235,
+    "win_rate": 0.010171125572427091,
+    "win_effect": -6.200983401311265,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:06:18.675336",
+    "type": "compound"
+  },
+  {
+    "pattern_id": "odds_win_超高オッズ_field_size_多頭数",
+    "conditions": {
+      "odds_win": {
+        "min": 30,
+        "max": null,
+        "label": "超高オッズ"
+      },
+      "field_size": {
+        "min": 14,
+        "max": null,
+        "label": "多頭数"
+      }
+    },
+    "sample_size": 161355,
+    "win_rate": 0.0091971119581048,
+    "win_effect": -6.298384762743495,
+    "p_value": 0.0,
+    "consistency": 1.0,
+    "score_adjustment": -5,
+    "last_updated": "2025-12-15T14:06:19.634859",
+    "type": "compound"
+  }
+]
